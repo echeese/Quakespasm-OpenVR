@@ -1,6 +1,3 @@
-id1
-history.txt
-
 # Created by https://www.gitignore.io/api/visualstudio
 
 ### VisualStudio ###
@@ -281,3 +278,13 @@ __pycache__/
 # !tools/packages.config
 
 # End of https://www.gitignore.io/api/visualstudio
+
+id1
+history.txt
+
+!**/codecs/x86/
+!**/codecs/x64/
+!**/OpenVR/bin/
+!**/OpenVR/bin/**/*.pdb
+!**/SDL/bin/
+!**/SDL2/bin/
