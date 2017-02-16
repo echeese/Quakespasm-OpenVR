@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include "cfgfile.h"
 #include "bgmusic.h"
+#include "vr.h"
 #include "resource.h"
 #if defined(SDL_FRAMEWORK) || defined(NO_SDL_CONFIG)
 #if defined(USE_SDL2)
@@ -138,6 +139,22 @@ QS_PFNGLUNIFORM1IPROC GL_Uniform1iFunc = NULL; //ericw
 QS_PFNGLUNIFORM1FPROC GL_Uniform1fFunc = NULL; //ericw
 QS_PFNGLUNIFORM3FPROC GL_Uniform3fFunc = NULL; //ericw
 QS_PFNGLUNIFORM4FPROC GL_Uniform4fFunc = NULL; //ericw
+
+// VR Related
+QS_PFNGLGENFRAMEBUFFERSPROC GL_GenFramebuffersFunc = NULL;
+QS_PFNGLBINDFRAMEBUFFERPROC GL_BindFramebufferFunc = NULL;
+QS_PFNGLGENRENDERBUFFERSPROC GL_GenRenderbuffersFunc = NULL;
+QS_PFNGLBINDRENDERBUFFERPROC GL_BindRenderbufferFunc = NULL;
+QS_PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC GL_RenderbufferStorageMultisampleFunc = NULL;
+QS_PFNGLFRAMEBUFFERRENDERBUFFERPROC GL_FramebufferRenderbufferFunc = NULL;
+QS_PFNGLTEXIMAGE2DMULTISAMPLEPROC GL_TexImage2DMultisampleFunc = NULL;
+QS_PFNGLFRAMEBUFFERTEXTURE2DPROC GL_FramebufferTexture2DFunc = NULL;
+QS_PFNGLCHECKFRAMEBUFFERSTATUSPROC GL_CheckFramebufferStatusFunc = NULL;
+QS_PFNGLBLITFRAMEBUFFERPROC GL_BlitFramebufferFunc = NULL;
+QS_PFNGLDELETERENDERBUFFERSPROC GL_DeleteRenderbuffersFunc = NULL;
+QS_PFNGLDELETEFRAMEBUFFERSPROC GL_DeleteFramebuffersFunc = NULL;
+
+qboolean gl_renderbuffers_able = false;
 
 //====================================
 
@@ -1199,6 +1216,41 @@ static void GL_CheckExtensions (void)
 	{
 		Con_Warning ("GLSL alias model rendering not available, using Fitz renderer\n");
 	}
+
+	// VR Related
+	GL_GenFramebuffersFunc = (QS_PFNGLGENFRAMEBUFFERSPROC)SDL_GL_GetProcAddress("glGenFramebuffers");
+	GL_BindFramebufferFunc = (QS_PFNGLBINDFRAMEBUFFERPROC)SDL_GL_GetProcAddress("glBindFramebuffer");
+	GL_GenRenderbuffersFunc = (QS_PFNGLGENRENDERBUFFERSPROC)SDL_GL_GetProcAddress("glGenRenderbuffers");
+	GL_BindRenderbufferFunc = (QS_PFNGLBINDRENDERBUFFERPROC)SDL_GL_GetProcAddress("glBindRenderbuffer");
+	GL_RenderbufferStorageMultisampleFunc = (QS_PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)SDL_GL_GetProcAddress("glRenderbufferStorageMultisample");
+	GL_FramebufferRenderbufferFunc = (QS_PFNGLFRAMEBUFFERRENDERBUFFERPROC)SDL_GL_GetProcAddress("glFramebufferRenderbuffer");
+	GL_TexImage2DMultisampleFunc = (QS_PFNGLTEXIMAGE2DMULTISAMPLEPROC)SDL_GL_GetProcAddress("glTexImage2DMultisample");
+	GL_CheckFramebufferStatusFunc = (QS_PFNGLCHECKFRAMEBUFFERSTATUSPROC)SDL_GL_GetProcAddress("glCheckFramebufferStatus");
+	GL_FramebufferTexture2DFunc =  (QS_PFNGLFRAMEBUFFERTEXTURE2DPROC)SDL_GL_GetProcAddress("glFramebufferTexture2D");
+	GL_BlitFramebufferFunc = (QS_PFNGLBLITFRAMEBUFFERPROC)SDL_GL_GetProcAddress("glBlitFramebuffer");
+	GL_DeleteRenderbuffersFunc = (QS_PFNGLDELETERENDERBUFFERSPROC)SDL_GL_GetProcAddress("glDeleteRenderbuffers");
+	GL_DeleteFramebuffersFunc = (QS_PFNGLDELETEFRAMEBUFFERSPROC)SDL_GL_GetProcAddress("glDeleteFramebuffers");
+
+	if (GL_GenFramebuffersFunc &&
+		GL_BindFramebufferFunc &&
+		GL_GenRenderbuffersFunc &&
+		GL_BindRenderbufferFunc &&
+		GL_RenderbufferStorageMultisampleFunc &&
+		GL_FramebufferRenderbufferFunc &&
+		GL_TexImage2DMultisampleFunc &&
+		GL_CheckFramebufferStatusFunc &&
+		GL_FramebufferTexture2DFunc &&
+		GL_BlitFramebufferFunc &&
+		GL_DeleteRenderbuffersFunc &&
+		GL_DeleteFramebuffersFunc)
+	{
+		Con_Printf("FOUND: Renderbuffers\n");
+		gl_renderbuffers_able = true;
+	}
+	else
+	{
+		Con_Warning("Renderbuffers not available\n");
+	}
 }
 
 /*
@@ -1298,6 +1350,11 @@ GL_EndRendering
 */
 void GL_EndRendering (void)
 {
+	if (vr_enable.value)
+	{
+		VR_Submit();
+	}
+
 	if (!scr_skipupdate)
 	{
 #if defined(USE_SDL2)
@@ -1305,6 +1362,11 @@ void GL_EndRendering (void)
 #else
 		SDL_GL_SwapBuffers();
 #endif
+	}
+
+	if (vr_enable.value)
+	{
+		VR_UpdatePoses();
 	}
 }
 

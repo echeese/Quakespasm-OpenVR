@@ -261,6 +261,44 @@ void GL_PolygonOffset (int);
 extern qboolean gl_texture_env_combine;
 extern qboolean gl_texture_env_add; // for GL_EXT_texture_env_add
 
+// VR Support
+#define GL_FRAMEBUFFER 0x8D40
+#define GL_RENDERBUFFER 0x8D41
+#define GL_DEPTH_ATTACHMENT 0x8D00
+#define GL_TEXTURE_2D_MULTISAMPLE 0x9100
+#define GL_COLOR_ATTACHMENT0 0x8CE0
+#define GL_FRAMEBUFFER_COMPLETE 0x8CD5
+#define GL_READ_FRAMEBUFFER 0x8CA8
+#define GL_DRAW_FRAMEBUFFER 0x8CA9
+
+typedef void (APIENTRYP QS_PFNGLGENFRAMEBUFFERSPROC) (GLsizei n, GLuint *framebuffers);
+typedef void (APIENTRYP QS_PFNGLBINDFRAMEBUFFERPROC) (GLenum target, GLuint framebuffer);
+typedef void (APIENTRYP QS_PFNGLGENRENDERBUFFERSPROC) (GLsizei n, GLuint *renderbuffers);
+typedef void (APIENTRYP QS_PFNGLBINDRENDERBUFFERPROC) (GLenum target, GLuint renderbuffer);
+typedef void (APIENTRYP QS_PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC) (GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
+typedef void (APIENTRYP QS_PFNGLFRAMEBUFFERRENDERBUFFERPROC) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+typedef void (APIENTRYP QS_PFNGLTEXIMAGE2DMULTISAMPLEPROC) (GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations);
+typedef void (APIENTRYP QS_PFNGLFRAMEBUFFERTEXTURE2DPROC) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+typedef GLenum(APIENTRYP QS_PFNGLCHECKFRAMEBUFFERSTATUSPROC) (GLenum target);
+typedef void (APIENTRYP QS_PFNGLBLITFRAMEBUFFERPROC) (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+typedef void (APIENTRYP QS_PFNGLDELETERENDERBUFFERSPROC) (GLsizei n, const GLuint *renderbuffers);
+typedef void (APIENTRYP QS_PFNGLDELETEFRAMEBUFFERSPROC) (GLsizei n, const GLuint *framebuffers);
+
+extern QS_PFNGLGENFRAMEBUFFERSPROC GL_GenFramebuffersFunc;
+extern QS_PFNGLBINDFRAMEBUFFERPROC GL_BindFramebufferFunc;
+extern QS_PFNGLGENRENDERBUFFERSPROC GL_GenRenderbuffersFunc;
+extern QS_PFNGLBINDRENDERBUFFERPROC GL_BindRenderbufferFunc;
+extern QS_PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC GL_RenderbufferStorageMultisampleFunc;
+extern QS_PFNGLFRAMEBUFFERRENDERBUFFERPROC GL_FramebufferRenderbufferFunc;
+extern QS_PFNGLTEXIMAGE2DMULTISAMPLEPROC GL_TexImage2DMultisampleFunc;
+extern QS_PFNGLFRAMEBUFFERTEXTURE2DPROC GL_FramebufferTexture2DFunc;
+extern QS_PFNGLCHECKFRAMEBUFFERSTATUSPROC GL_CheckFramebufferStatusFunc;
+extern QS_PFNGLBLITFRAMEBUFFERPROC GL_BlitFramebufferFunc;
+extern QS_PFNGLDELETERENDERBUFFERSPROC GL_DeleteRenderbuffersFunc;
+extern QS_PFNGLDELETEFRAMEBUFFERSPROC GL_DeleteFramebuffersFunc;
+
+extern qboolean gl_renderbuffers_able;
+
 //johnfitz -- rendering statistics
 extern int rs_brushpolys, rs_aliaspolys, rs_skypolys, rs_particles, rs_fogpolys;
 extern int rs_dynamiclightmaps, rs_brushpasses, rs_aliaspasses, rs_skypasses;

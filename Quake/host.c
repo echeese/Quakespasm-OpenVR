@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 #include "bgmusic.h"
+#include "vr.h"
 #include <setjmp.h>
 
 /*
@@ -871,6 +872,7 @@ void Host_Init (void)
 		BGM_Init();
 		Sbar_Init ();
 		CL_Init ();
+		VR_Init();
 	}
 
 	Hunk_AllocName (0, "-HOST_HUNKLEVEL-");
@@ -926,6 +928,7 @@ void Host_Shutdown(void)
 
 	if (cls.state != ca_dedicated)
 	{
+		VR_Shutdown();
 		if (con_initialized)
 			History_Shutdown ();
 		BGM_Shutdown();
