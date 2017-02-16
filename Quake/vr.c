@@ -64,8 +64,8 @@ void VR_Init (void)
 	Cvar_RegisterVariable(&vr_enable);
 	Cvar_SetCallback(&vr_enable, VR_Enabled_f);
 
-	if (vr_enable.value)
-		VR_Enable();
+	if (vr_enable.value && !VR_Enable())
+		Cvar_SetValueQuick(&vr_enable, 0);
 }
 
 void VR_Shutdown(void)
@@ -117,6 +117,9 @@ void VR_Disable(void)
 
 void VR_Submit (void)
 {
+	if (!initialized)
+		return;
+
 	Texture_t tex =
 	{
 		.handle = (void*)(uintptr_t)VR_framebuffer.m_nResolveTextureId,
