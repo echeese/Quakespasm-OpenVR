@@ -77,7 +77,7 @@ VR_IVRSystem_FnTable_t* VRSystem(void)
 		}
 		else
 		{
-			Sys_Error("[OpenVR] Unable to get system interface: %s\n", VR_GetStringForHmdError(eError));
+			Sys_Error("[OpenVR] Unable to get system interface: %s\n", VR_GetVRInitErrorAsEnglishDescription(eError));
 		}
 	}
 	return pVRSystem;
@@ -98,7 +98,7 @@ VR_IVRCompositor_FnTable_t* VRCompositor(void)
 		}
 		else
 		{
-			Sys_Error("[OpenVR] Unable to get compositor interface: %s\n", VR_GetStringForHmdError(eError));
+			Sys_Error("[OpenVR] Unable to get compositor interface: %s\n", VR_GetVRInitErrorAsEnglishDescription(eError));
 		}
 	}
 	return pVRCompositor;

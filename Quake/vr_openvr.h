@@ -46,15 +46,14 @@ typedef struct VR_IVRTrackedCamera_FnTable VR_IVRTrackedCamera_FnTable_t;
 #endif
 
 Q_API intptr_t VR_InitInternal(EVRInitError *peError, EVRApplicationType eType);
-Q_API extern void VR_ShutdownInternal();
+Q_API void VR_ShutdownInternal();
 Q_API bool VR_IsHmdPresent();
-Q_API bool VR_IsRuntimeInstalled();
-Q_API const char* VR_GetStringForHmdError(EVRInitError error);
 Q_API intptr_t VR_GetGenericInterface(const char *pchInterfaceVersion, EVRInitError *peError);
-Q_API bool VR_IsInterfaceVersionValid(const char *pchInterfaceVersion);
-Q_API uint32_t VR_GetInitToken();
-Q_API char* VR_RuntimePath();
+Q_API bool VR_IsRuntimeInstalled();
 Q_API const char * VR_GetVRInitErrorAsSymbol(EVRInitError error);
+Q_API const char * VR_GetVRInitErrorAsEnglishDescription(EVRInitError error);
+Q_API uint32_t VR_GetInitToken();
+Q_API bool VR_IsInterfaceVersionValid(const char *pchInterfaceVersion);
 
 VR_IVRSystem_FnTable_t* OpenVR_Init(EVRInitError *peError, EVRApplicationType eType);
 void OpenVR_Shutdown(void);

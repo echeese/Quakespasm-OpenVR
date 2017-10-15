@@ -25,6 +25,7 @@ qboolean VR_Enable(void);
 void VR_Disable(void);
 void VR_Submit(void);
 void VR_UpdatePoses(void);
-void VR_RenderView(void);
+void VR_RenderScene(void);
+void VR_SetupGL(void);
 
 #endif

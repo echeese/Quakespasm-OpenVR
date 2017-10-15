@@ -536,7 +536,10 @@ void R_SetupScene (void)
 	R_PushDlights ();
 	R_AnimateLight ();
 	r_framecount++;
-	R_SetupGL ();
+	if (vr_enable.value)
+		VR_SetupGL();
+	else
+		R_SetupGL ();
 }
 
 /*
@@ -995,6 +998,10 @@ void R_RenderView (void)
 		glColorMask(1, 1, 1, 1);
 		VectorMA (r_refdef.vieworg, -0.5f * eyesep, vright, r_refdef.vieworg);
 		frustum_skew = 0.0f;
+	}
+	else if (vr_enable.value)
+	{
+		VR_RenderScene();
 	}
 	else
 	{
