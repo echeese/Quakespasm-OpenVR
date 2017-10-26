@@ -27,5 +27,6 @@ void VR_Submit(void);
 void VR_UpdatePoses(void);
 void VR_RenderScene(void);
 void VR_SetupGL(void);
+void VR_SetYaw(float);
 
 #endif

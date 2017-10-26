@@ -1,5 +1,6 @@
 #include "vr.h"
 #include "vr_openvr.h"
+#include "quakedef.h"
 
 // number of Quake units per meter
 // 1 unit = 1.5 inches = 0.0381 meters
@@ -7,12 +8,14 @@
 cvar_t vr_scale = { "vr_scale", "26.2467", CVAR_NONE };
 
 cvar_t vr_enable = { "vr_enable", "1", CVAR_NONE };
+float vr_yaw;
 
 FramebufferDesc_t VR_framebuffers[2];
 qboolean vr_initialized = false;
 TrackedDevicePose_t trackedDevicePose[MAX_TRACKED_DEVICE_COUNT];
 EVREye current_eye;
 
+// Forward declarations
 qboolean gluInvertMatrix(const float m[16], float invOut[16]);
 void transpose44(float matrix[4][4], float matrix2[4][4]);
 void transpose34to44(float mat34[3][4], float mat44[4][4]);
@@ -21,9 +24,9 @@ cvar_t gl_farclip;
 
 // from gl_rmain.c
 #define NEARCLIP 4
-const int msaa_samples = 8;
 
-qboolean CreateFrameBuffer(int nWidth, int nHeight, FramebufferDesc_t* framebufferDesc)
+const int msaa_samples = 8;
+static qboolean CreateFrameBuffer(int nWidth, int nHeight, FramebufferDesc_t* framebufferDesc)
 {
 	if (!gl_renderbuffers_able)
 		return false;
@@ -61,12 +64,12 @@ qboolean CreateFrameBuffer(int nWidth, int nHeight, FramebufferDesc_t* framebuff
 	return true;
 }
 
-qboolean CreateFrameBuffers(int nWidth, int nHeight)
+static qboolean CreateFrameBuffers(int nWidth, int nHeight)
 {
 	return CreateFrameBuffer(nWidth, nHeight, &VR_framebuffers[0]) && CreateFrameBuffer(nWidth, nHeight, &VR_framebuffers[1]);
 }
 
-qboolean DestroyFrameBuffer(FramebufferDesc_t* framebufferDesc)
+static qboolean DestroyFrameBuffer(FramebufferDesc_t* framebufferDesc)
 {
 	GL_DeleteRenderbuffersFunc(1, &framebufferDesc->m_nDepthBufferId);
 	glDeleteTextures(1, &framebufferDesc->m_nRenderTextureId);
@@ -263,13 +266,24 @@ void VR_SetupGL(void)
 	eyeMatrix2[3][2] *= vr_scale.value;
 	gluInvertMatrix(&eyeMatrix2[0][0], &eyeMatrix2[0][0]);
 	glLoadMatrixf(&eyeMatrix2[0][0]);
-	
-	glRotatef(-90, 1, 0, 0);	    // put Z going up
-	glRotatef(90, 0, 0, 1);	    // put Z going up
-	glRotatef(-r_refdef.viewangles[2], 1, 0, 0);
-	glRotatef(-r_refdef.viewangles[0], 0, 1, 0);
-	glRotatef(-r_refdef.viewangles[1], 0, 0, 1);
-	glTranslatef(-r_refdef.vieworg[0], -r_refdef.vieworg[1], -r_refdef.vieworg[2]);
+
+	float headMatrix[4][4];
+	transpose34to44(trackedDevicePose[0].mDeviceToAbsoluteTracking.m, headMatrix);
+	headMatrix[3][0] *= vr_scale.value;
+	headMatrix[3][1] *= vr_scale.value;
+	headMatrix[3][2] *= vr_scale.value;
+	gluInvertMatrix(&headMatrix[0][0], &headMatrix[0][0]);
+	glMultMatrixf(&headMatrix[0][0]);
+
+	glRotatef(-90.0f - vr_yaw, 0.0f, 1.0f, 0.0f);
+
+	glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+	glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+	glTranslatef(-r_refdef.vieworg[0], -r_refdef.vieworg[1], -r_refdef.vieworg[2] + cl.viewheight + 24.0f);
+	// FIXME: I don't like hardcoding the distance to the bottom of the player's hull (24.0f) here,
+	// but it seems impossible to get the information about this solely from the client, as NetQuake
+	// only seems to send the origin information, and nothing about the bounding box. Oh well.
+
 
 	//
 	// set drawing parms
@@ -282,6 +296,13 @@ void VR_SetupGL(void)
 	glDisable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);
 	glEnable(GL_DEPTH_TEST);
+}
+
+// Spawning and teleporting are a few things that change the player's angles
+// This is so whenever you spawn, you always face the intended direction.
+void VR_SetYaw(float yaw)
+{
+	vr_yaw = yaw;
 }
 
 // BORING MATH STUFF
